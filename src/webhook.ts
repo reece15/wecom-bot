@@ -158,7 +158,7 @@ export async function handleWeComWebhook(
       // Initialize Client
       const client = getWeComClient(params.corpid, params.corpsecret, params.agentid);
 
-      // Dispatch to Moltbot
+      // Dispatch to OpenClaw
       const runtime = getWeComRuntime();
       const config = runtime.config.loadConfig();
       

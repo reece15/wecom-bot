@@ -2,7 +2,7 @@ import {
   buildChannelConfigSchema,
   registerPluginHttpRoute,
   type ChannelPlugin,
-  type MoltbotConfig,
+  type OpenClawConfig,
   type PluginRuntime,
   type ChannelOnboardingAdapter,
   type ChannelOnboardingStatusContext,
@@ -142,7 +142,7 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
   reload: { configPrefixes: ["channels.wecom"] },
   configSchema: buildChannelConfigSchema(WeComConfigSchema),
   config: {
-    listAccountIds: (cfg: MoltbotConfig) => {
+    listAccountIds: (cfg: OpenClawConfig) => {
         const wecom = cfg.channels?.wecom as WeComConfig | undefined;
         const ids = Object.keys(wecom || {});
         if (process.env.WECOM_CORPID && process.env.WECOM_CORPSECRET && process.env.WECOM_AGENTID) {
@@ -150,7 +150,7 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
         }
         return ids;
     },
-    resolveAccount: (cfg: MoltbotConfig, accountId: string) => {
+    resolveAccount: (cfg: OpenClawConfig, accountId: string) => {
         if (accountId === "env" && process.env.WECOM_CORPID) {
             return {
                 id: "env",
@@ -172,13 +172,13 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
 
         return { ...acc, id: accountId, token, encodingAESKey };
     },
-    defaultAccountId: (cfg: MoltbotConfig) => {
+    defaultAccountId: (cfg: OpenClawConfig) => {
         if (process.env.WECOM_CORPID) return "env";
         const wecom = cfg.channels?.wecom as WeComConfig | undefined;
         const keys = Object.keys(wecom || {});
         return keys.length > 0 ? keys[0] : undefined;
     },
-    setAccountEnabled: ({ cfg, accountId, enabled }: { cfg: MoltbotConfig, accountId: string, enabled: boolean }) =>
+    setAccountEnabled: ({ cfg, accountId, enabled }: { cfg: OpenClawConfig, accountId: string, enabled: boolean }) =>
       setAccountEnabledInConfigSection({
         cfg,
         sectionKey: "wecom",
@@ -186,7 +186,7 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
         enabled,
         allowTopLevel: true,
       }),
-    deleteAccount: ({ cfg, accountId }: { cfg: MoltbotConfig, accountId: string }) =>
+    deleteAccount: ({ cfg, accountId }: { cfg: OpenClawConfig, accountId: string }) =>
       deleteAccountFromConfigSection({
         cfg,
         sectionKey: "wecom",

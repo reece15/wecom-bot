@@ -1,4 +1,4 @@
-import type { MoltbotPluginApi } from "openclaw/plugin-sdk";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
 
 import { wecomPlugin } from "./src/channel.js";
@@ -12,7 +12,7 @@ const plugin = {
     quickstartAllowFrom: true,
   },
   configSchema: emptyPluginConfigSchema(),
-  register(api: MoltbotPluginApi) {
+  register(api: OpenClawPluginApi) {
     setWeComRuntime(api.runtime);
     api.registerChannel({ plugin: wecomPlugin });
   },
