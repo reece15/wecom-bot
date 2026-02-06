@@ -165,11 +165,11 @@ export async function handleWeComWebhook(
       const agentId = "default"; // Default agent
 
       const ctxPayload = {
-          From: fromUser,
-          Body: content,
-          channel: "wecom",
-          channelData: {
-              wecom: {
+        From: fromUser,
+        Body: content,
+        channel: "wecom-app",
+        channelData: {
+            wecom: {
                   corpid: params.corpid,
                   agentid: params.agentid,
                   msgId

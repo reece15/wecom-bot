@@ -1,7 +1,7 @@
 {
-  "id": "wecom",
+  "id": "wecom-app",
   "channels": [
-    "wecom"
+    "wecom-app"
   ],
   "configSchema": {
     "type": "object",

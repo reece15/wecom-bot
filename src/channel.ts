@@ -3,33 +3,25 @@ import {
   registerPluginHttpRoute,
   type ChannelPlugin,
   type OpenClawConfig,
-  type PluginRuntime,
-  type ChannelOnboardingAdapter,
-  type ChannelOnboardingStatusContext,
-  type ChannelOnboardingConfigureContext,
-  type ChannelOnboardingResult,
-  type ChannelOutboundContext,
-  type OutboundDeliveryResult,
   type ChannelGatewayContext,
   deleteAccountFromConfigSection,
   setAccountEnabledInConfigSection,
 } from "openclaw/plugin-sdk";
 import { WeComConfigSchema, type ResolvedWeComAccount, type WeComConfig } from "./types.js";
-import { getWeComClient } from "./client.js";
 import { handleWeComWebhook } from "./webhook.js";
 import { wecomOutbound } from "./outbound.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
-  id: "wecom",
+  id: "wecom-app",
   outbound: wecomOutbound,
   meta: {
-    id: "wecom",
+    id: "wecom-app",
     label: "WeCom",
     selectionLabel: "WeCom (Enterprise WeChat)",
     detailLabel: "WeCom Bot",
-    docsPath: "/channels/wecom",
-    docsLabel: "wecom",
+    docsPath: "/channels/wecom-app",
+    docsLabel: "wecom-app",
     blurb: "Enterprise WeChat integration.",
     quickstartAllowFrom: true,
   },
@@ -42,12 +34,12 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
         return;
       }
       
-      const path = "/wecom/webhook";
+      const path = "/wecom-app/webhook";
       console.log(`[WeCom] Registering webhook at ${path}`);
 
       registerPluginHttpRoute({
         path,
-        pluginId: "wecom",
+        pluginId: "wecom-app",
         accountId: account.id,
         log: (msg: string) => console.log(`[WeCom] ${msg}`),
         handler: async (req: IncomingMessage, res: ServerResponse) => {
@@ -65,35 +57,35 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
     }
   },
   onboarding: {
-    channel: "wecom",
-    getStatus: async (ctx: ChannelOnboardingStatusContext) => {
+    channel: "wecom-app",
+    getStatus: async (ctx: any) => {
       const { cfg } = ctx;
-      const wecom = cfg.channels?.wecom as WeComConfig | undefined;
+      const wecom = cfg.channels?.["wecom-app"] as WeComConfig | undefined;
       const configured = Object.keys(wecom || {}).length > 0 || 
         (!!process.env.WECOM_CORPID && !!process.env.WECOM_CORPSECRET && !!process.env.WECOM_AGENTID);
       
       return {
-        channel: "wecom",
+        channel: "wecom-app",
         configured,
         statusLines: configured ? ["Configured"] : ["Not configured"],
       };
     },
-    configure: async (ctx: ChannelOnboardingConfigureContext) => {
+    configure: async (ctx: any) => {
       const { prompter, cfg } = ctx;
       
       const corpid = await prompter.text({
         message: "WeCom CorpID",
-        validate: (v) => v ? undefined : "Required",
+        validate: (v: any) => v ? undefined : "Required",
       });
       
       const corpsecret = await prompter.text({
         message: "WeCom Secret",
-        validate: (v) => v ? undefined : "Required",
+        validate: (v: any) => v ? undefined : "Required",
       });
 
       const agentid = await prompter.text({
         message: "WeCom AgentID",
-        validate: (v) => v ? undefined : "Required",
+        validate: (v: any) => v ? undefined : "Required",
       });
 
       const token = await prompter.text({
@@ -110,8 +102,8 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
           ...cfg,
           channels: {
               ...cfg.channels,
-              wecom: {
-                  ...(cfg.channels?.wecom as any),
+              "wecom-app": {
+                  ...(cfg.channels?.["wecom-app"] as any),
                   [accountId]: {
                       corpid,
                       corpsecret,
@@ -139,49 +131,54 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
     nativeCommands: true,
     blockStreaming: true,
   },
-  reload: { configPrefixes: ["channels.wecom"] },
+  reload: { configPrefixes: ["channels.wecom-app"] },
   configSchema: buildChannelConfigSchema(WeComConfigSchema),
   config: {
     listAccountIds: (cfg: OpenClawConfig) => {
-        const wecom = cfg.channels?.wecom as WeComConfig | undefined;
+        const wecom = cfg.channels?.["wecom-app"] as WeComConfig | undefined;
         const ids = Object.keys(wecom || {});
         if (process.env.WECOM_CORPID && process.env.WECOM_CORPSECRET && process.env.WECOM_AGENTID) {
             if (!ids.includes("env")) ids.push("env");
         }
         return ids;
     },
-    resolveAccount: (cfg: OpenClawConfig, accountId: string) => {
-        if (accountId === "env" && process.env.WECOM_CORPID) {
+    resolveAccount: (cfg: OpenClawConfig, accountId?: string | null) => {
+        const id = accountId || "default";
+        
+        if (id === "env" && process.env.WECOM_CORPID) {
             return {
                 id: "env",
-                corpid: process.env.WECOM_CORPID,
+                corpid: process.env.WECOM_CORPID!,
                 corpsecret: process.env.WECOM_CORPSECRET || "",
                 agentid: process.env.WECOM_AGENTID || "",
                 token: process.env.WECOM_TOKEN,
                 encodingAESKey: process.env.WECOM_AESKEY,
-                enabled: true
+                enabled: true,
+                blockStreaming: false
             };
         }
-        const wecom = cfg.channels?.wecom as WeComConfig | undefined;
-        const acc = wecom?.[accountId];
-        if (!acc) return undefined;
+        const wecom = cfg.channels?.["wecom-app"] as WeComConfig | undefined;
+        const acc = wecom?.[id];
+        if (!acc) {
+             throw new Error(`WeCom account not found: ${id}`);
+        }
         
         // Fallback to environment variables if not configured
         const token = acc.token || process.env.WECOM_TOKEN;
         const encodingAESKey = acc.encodingAESKey || process.env.WECOM_AESKEY;
 
-        return { ...acc, id: accountId, token, encodingAESKey };
+        return { ...acc, id: id, token, encodingAESKey };
     },
     defaultAccountId: (cfg: OpenClawConfig) => {
         if (process.env.WECOM_CORPID) return "env";
-        const wecom = cfg.channels?.wecom as WeComConfig | undefined;
+        const wecom = cfg.channels?.["wecom-app"] as WeComConfig | undefined;
         const keys = Object.keys(wecom || {});
-        return keys.length > 0 ? keys[0] : undefined;
+        return keys.length > 0 ? keys[0] : "";
     },
     setAccountEnabled: ({ cfg, accountId, enabled }: { cfg: OpenClawConfig, accountId: string, enabled: boolean }) =>
       setAccountEnabledInConfigSection({
         cfg,
-        sectionKey: "wecom",
+        sectionKey: "wecom-app",
         accountId,
         enabled,
         allowTopLevel: true,
@@ -189,47 +186,8 @@ export const wecomPlugin: ChannelPlugin<ResolvedWeComAccount> = {
     deleteAccount: ({ cfg, accountId }: { cfg: OpenClawConfig, accountId: string }) =>
       deleteAccountFromConfigSection({
         cfg,
-        sectionKey: "wecom",
+        sectionKey: "wecom-app",
         accountId,
       }),
   },
-  outbound: {
-    deliveryMode: "direct",
-    sendText: async (ctx: ChannelOutboundContext): Promise<OutboundDeliveryResult> => {
-       const { cfg, accountId, to, text } = ctx;
-       let account: ResolvedWeComAccount | undefined;
-       const id = accountId || "default";
-       
-       if (id === "env" && process.env.WECOM_CORPID) {
-            account = {
-                id: "env",
-                corpid: process.env.WECOM_CORPID,
-                corpsecret: process.env.WECOM_CORPSECRET || "",
-                agentid: process.env.WECOM_AGENTID || "",
-                token: process.env.WECOM_TOKEN,
-                encodingAESKey: process.env.WECOM_AESKEY,
-                enabled: true
-            };
-       } else {
-            const wecom = cfg.channels?.wecom as WeComConfig | undefined;
-            const acc = wecom?.[id];
-            if (acc) {
-                account = { ...acc, id };
-            }
-       }
-       
-       if (!account) {
-           throw new Error(`WeCom account ${id} not found`);
-       }
-
-       const client = getWeComClient(account.corpid, account.corpsecret, String(account.agentid));
-       await client.sendText(to, text);
-       
-       return {
-         channel: "wecom",
-         messageId: Date.now().toString(),
-         meta: { accountId: id }
-       };
-    }
-  }
 };

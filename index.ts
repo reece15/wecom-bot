@@ -5,8 +5,8 @@ import { wecomPlugin } from "./src/channel.js";
 import { setWeComRuntime } from "./src/runtime.js";
 
 const plugin = {
-  id: "wecom",
-  name: "WeCom",
+  id: "wecom-app",
+  name: "wecom-app",
   description: "Enterprise WeChat (WeCom) channel plugin",
   meta: {
     quickstartAllowFrom: true,

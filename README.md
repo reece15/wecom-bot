@@ -1,68 +1,10 @@
-# OpenClaw WeCom Bot Plugin
+# OpenClaw 企业微信 (WeCom) 插件
 
-[English](#english) | [中文](#chinese)
+[English](README_EN.md) | [中文](README.md)
 
-<a name="english"></a>
+这是一个 [OpenClaw](https://github.com/openclaw/openclaw) 的独立插件，为您的 AI 助手添加 **企业微信 (WeCom)** 渠道支持。它允许您将 OpenClaw 强大的 AI 智能体能力接入到企业微信应用中。
 
-## 🦞 OpenClaw WeCom (Enterprise WeChat) Plugin
-
-This is a standalone plugin for [OpenClaw](https://github.com/openclaw/openclaw) that adds support for **WeCom (Enterprise WeChat)** as a messaging channel. It allows you to deploy a powerful AI assistant on WeCom.
-
-### Features
-
-- **WeCom Webhook Integration**: Receive messages from WeCom via callback.
-- **Enterprise Verification**: Supports CorpID, Secret, AgentID, and Token/AES Key verification.
-- **AI Agent Capabilities**: Connects WeCom users to OpenClaw's AI agents.
-- **Outbound Messaging**: Send messages back to WeCom users.
-- **Onboarding Support**: Integrated with OpenClaw's onboarding wizard.
-
-### Installation
-
-Navigate to your OpenClaw installation and install this plugin:
-
-```bash
-# If installing from a local folder (development)
-openclaw plugin add /path/to/wecom-bot
-
-# If published to npm (future)
-# openclaw plugin add wecom-bot
-```
-
-Or add it to your `openclaw.json` config manually if you are managing extensions via config.
-
-### Configuration
-
-You can configure the plugin via the OpenClaw onboarding wizard (`openclaw onboard`) or manually in your configuration file.
-
-#### Environment Variables
-
-- `WECOM_CORPID`: Your WeCom Corporation ID.
-- `WECOM_CORPSECRET`: Your Application Secret.
-- `WECOM_AGENTID`: The Agent ID of your WeCom app.
-
-#### Manual Configuration
-
-In your OpenClaw config:
-
-```yaml
-channels:
-  wecom:
-    corpid: "ww..."
-    corpsecret: "..."
-    agentid: "1000001"
-    token: "..." # Optional, for webhook callback
-    encodingAESKey: "..." # Optional, for webhook callback
-```
-
----
-
-<a name="chinese"></a>
-
-## 🦞 OpenClaw 企业微信 (WeCom) 插件
-
-这是一个 [OpenClaw](https://github.com/openclaw/openclaw) 的独立插件，为您的 AI 助手添加 **企业微信 (WeCom)** 渠道支持。
-
-### 功能特性
+## 功能特性
 
 - **企业微信 Webhook 集成**：通过回调接收企业微信消息。
 - **企业验证**：支持 CorpID、Secret、AgentID 以及 Token/AES Key 验证。
@@ -70,42 +12,123 @@ channels:
 - **消息发送**：支持向企业微信用户发送回复消息。
 - **向导支持**：集成 OpenClaw 的 onboarding 向导，配置更简单。
 
-### 安装
+## 安装
 
-进入您的 OpenClaw 安装目录并安装此插件：
+在插件目录下执行：
 
 ```bash
-# 如果从本地目录安装 (开发模式)
-openclaw plugin add /path/to/wecom-bot
-
-# 如果已发布到 npm (未来)
-# openclaw plugin add wecom-bot
+git clone https://github.com/openclaw/wecom-bot.git && cd wecom-bot
+openclaw plugins install . 
+# 或者使用 npx: npx openclaw plugins install .
 ```
 
-或者手动添加到 `openclaw.json` 配置文件中。
+> 注意：安装过程可能需要下载依赖，请耐心等待。
 
-### 配置
+## 配置
 
-您可以通过 OpenClaw 的配置向导 (`openclaw onboard`) 进行配置，或者手动修改配置文件。
+### 1. 获取企业微信凭证
 
-#### 环境变量
+1. 登录 [企业微信管理后台](https://work.weixin.qq.com/wework_admin/frame)。
+2. 进入 **我的企业** -> **企业信息**，获取 `CorpID`。
+3. 进入 **应用管理** -> **创建应用**（或选择现有应用）。
+4. 获取应用的 `AgentId` 和 `Secret`。
+5. 在应用详情页 -> **接收消息** -> **设置 API 接收**：
+   - 获取 `Token` 和 `EncodingAESKey`。
+   - **URL** 需要填入 OpenClaw 网关的公网地址，格式通常为 `http://YOUR_SERVER_IP:PORT/wecom-app/webhook`。
 
-- `WECOM_CORPID`: 您的企业微信 CorpID。
-- `WECOM_CORPSECRET`: 您的应用 Secret。
-- `WECOM_AGENTID`: 您企业微信应用的 Agent ID。
+### 2. 添加配置
 
-#### 手动配置
+#### 方式一：交互式配置 (推荐)
 
-在您的 OpenClaw 配置文件中：
+```bash
+openclaw onboard
+# 选择 wecom-app 进行交互式配置
+```
 
-```yaml
-channels:
-  wecom:
-    corpid: "ww..."
-    corpsecret: "..."
-    agentid: "1000001"
-    token: "..." # 可选，用于回调验证
-    encodingAESKey: "..." # 可选，用于回调加密
+#### 方式二：命令行配置
+
+```bash
+openclaw channels add --channel wecom-app
+```
+
+#### 方式三：手动编辑配置
+
+编辑您的 OpenClaw 配置文件（通常位于 `~/.openclaw/openclaw.json`）：
+
+```json
+{
+  "channels": {
+    "wecom-app": {
+      "default": {
+        "enabled": true,
+        "corpid": "ww...",
+        "corpsecret": "...",
+        "agentid": "1000001",
+        "token": "...",
+        "encodingAESKey": "..."
+      }
+    }
+  }
+}
+```
+
+## 配置项说明
+
+| 配置项 | 必填 | 说明 |
+|--------|------|------|
+| `corpid` | 是 | 企业 ID (CorpID) |
+| `corpsecret` | 是 | 应用 Secret |
+| `agentid` | 是 | 应用 AgentID |
+| `token` | 否 | Webhook 回调 Token (接收消息必填) |
+| `encodingAESKey` | 否 | Webhook 加密 Key (接收消息必填) |
+
+## 使用
+
+### 启动
+
+后台启动网关：
+```bash
+openclaw gateway restart
+```
+
+前台启动（方便查看日志）：
+```bash
+openclaw gateway --verbose
+```
+
+## 常见问题与排查
+
+### 1. 无法发送消息 / Error 60020
+
+**现象**：
+- 用户发送消息后，后台日志显示接收正常。
+- 机器人回复失败，日志报错 `Error: WeCom API error 60020: not allow to access from your ip`。
+
+**原因**：
+服务器 IP 未被添加到企业微信应用的“企业可信 IP”白名单中。即使配置了接收消息的回调，发送消息（调用 API）仍需校验 IP 白名单。
+
+**解决方案**：
+1. 登录 [企业微信管理后台](https://work.weixin.qq.com/wework_admin/frame)。
+2. 进入 **应用管理** -> 选择您的应用（Agent）。
+3. 找到 **企业可信IP** 配置项，点击“配置”。
+4. 将您的服务器公网 IP 添加到列表中并保存。
+
+### 2. 无法接收消息
+
+**排查步骤**：
+1. 检查 `openclaw gateway` 是否正常启动并监听端口。
+2. 检查企业微信后台“接收消息”配置中的 URL 是否正确，能否通过公网访问。
+3. 确保 `Token` 和 `EncodingAESKey` 配置与后台一致。
+
+## 升级
+
+```bash
+cd wecom-bot
+git pull
+npm install
+npm run build
+openclaw plugins install . --force
+openclaw gateway restart
 ```
 
 ## License
