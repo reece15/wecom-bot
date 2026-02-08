@@ -290,7 +290,8 @@ export async function handleWeComWebhook(
                     }
                 },
                 replyOptions: {
-                    disableBlockStreaming: blockStreaming
+                    // Always enable streaming to capture blocks for buffering
+                    disableBlockStreaming: false
                 }
             });
         } finally {
