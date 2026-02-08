@@ -177,6 +177,8 @@ export async function handleWeComWebhook(
           }
       };
 
+      const blockStreaming = params.blockStreaming ?? true;
+
       // Process in background (sequentially per user)
       dispatchQueue.enqueue(fromUser, async () => {
         let sentText = "";
@@ -288,8 +290,7 @@ export async function handleWeComWebhook(
                     }
                 },
                 replyOptions: {
-                    // Always enable streaming to capture blocks for buffering
-                    disableBlockStreaming: false
+                    disableBlockStreaming: blockStreaming
                 }
             });
         } finally {

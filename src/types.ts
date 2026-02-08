@@ -6,7 +6,7 @@ export const WeComAccountConfigSchema = z.object({
   agentid: z.union([z.string(), z.number()]).transform((v) => String(v)).describe("WeCom AgentID"),
   token: z.string().optional().describe("Callback Token (for receiving messages)"),
   encodingAESKey: z.string().optional().describe("Callback EncodingAESKey"),
-  blockStreaming: z.boolean().default(false).describe("Enable block streaming (send partial messages). Default false (wait for full reply)."),
+  blockStreaming: z.boolean().default(true).describe("Block streaming (wait for full reply). Default true (stream partial messages)."),
   enabled: z.boolean().default(true).describe("Enable this account"),
 });
 
