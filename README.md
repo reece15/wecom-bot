@@ -2,10 +2,11 @@
 
 [English](README_EN.md) | [中文](README.md)
 
-这是一个 [OpenClaw](https://github.com/openclaw/openclaw) 的独立插件，为您的 AI 助手添加 **企业微信 (WeCom)** 渠道支持。它允许您将 OpenClaw 强大的 AI 智能体能力接入到企业微信应用中。
+这是一个 [OpenClaw](https://github.com/openclaw/openclaw) 的独立插件，为您的 AI 助手添加 **企业微信 (WeCom)** 渠道支持。它允许您将 OpenClaw 强大的 AI 智能体能力接入到企业微信应用中。你可以配置微信收发企业微信消息，来通过微信客户端与openclaw进行交互。
 
 ## 功能特性
 
+- **微信收发消息**：支持企业微信用户与 AI 智能体的消息交互。
 - **企业微信 Webhook 集成**：通过回调接收企业微信消息。
 - **企业验证**：支持 CorpID、Secret、AgentID 以及 Token/AES Key 验证。
 - **AI 智能体能力**：将企业微信用户连接到 OpenClaw 的 AI 智能体。
@@ -35,6 +36,7 @@ openclaw plugins install .
 5. 在应用详情页 -> **接收消息** -> **设置 API 接收**：
    - 获取 `Token` 和 `EncodingAESKey`。
    - **URL** 需要填入 OpenClaw 网关的公网地址，格式通常为 `http://YOUR_SERVER_IP:PORT/wecom-app/webhook`。
+6. 配置可信Ip: 将openclaw的ip添加到可信ip列表中。
 
 ### 2. 添加配置
 
@@ -95,6 +97,10 @@ openclaw gateway restart
 ```bash
 openclaw gateway --verbose
 ```
+
+## 如何微信收发企业微信消息
+![alt text](weixin.png)
+点击链接查看和 Kimi 的对话 https://www.kimi.com/share/19c4c4a9-c0f2-8b4b-8000-0000359762b6
 
 ## 常见问题与排查
 
